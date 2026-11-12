@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  zayavki_web:
+    image: menshikovvalex2020/zayavki_app_image:latest
+    container_name: zayavki_app_container
+    network_mode: "host"
+    restart: unless-stopped
+    command: python manage.py runserver 0.0.0.0:8000
