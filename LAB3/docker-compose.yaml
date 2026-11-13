@@ -1,0 +1,43 @@
+
+services:
+  db:                                      # <--- Новый сервис базы данных
+    image: postgres:15                     # Официальный образ PostgreSQL
+    container_name: is_zayavki_db
+    environment:
+      POSTGRES_DB: is_ zayavki_db              # Имя БД (должно совпадать с settings.py)
+      POSTGRES_USER: is_user             # Пользователь
+      POSTGRES_PASSWORD: 12345           # Пароль
+    volumes:
+      - pg_data:/var/lib/postgresql/data   # Чтобы данные не удалялись при перезапуске
+    networks:
+      - menshikov_net
+
+  web:
+    image: menshikovalex/zayavki_app_image:latest
+    container_name: zayavki_app_container
+    ports:
+      - "8000:8000"
+    environment:
+      # Переменная окружения, указывающая, куда писать логи внутри контейнера
+      - LOG_DIR=/app/logs
+    volumes:
+      # 1. Bind mount: папка logs с хоста монтируется в /app/logs контейнера
+      - ./logs:/app/logs
+      # 2. Volume: папка templates_data (создастся автоматически) монтируется в templates
+      - templates_data:/app/zayavki_app/templates
+    depends_on:                            # <--- Важно: web ждет запуска db
+      - db
+    networks:
+      - menshikov_net
+
+networks:
+  menshikov_net:
+    name: Menshikov
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.20.4.0/24  # 
+volumes:
+  templates_data:
+  pg_data:                                 # <--- Новый том для базы
+    driver: local
